@@ -20,12 +20,12 @@ port = sys.argv[1]
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-sock.bind(("0.0.0.0", int(port)))
+sock.bind(("0.0.0.0", port))
 sock.settimeout(10)
 sock.listen(1)
 
 
-def proc(clientSock, addr):
+def proc(clientSock):
     clientSock.send(b"accio\r\n")
 
     try:
@@ -50,14 +50,8 @@ def proc(clientSock, addr):
 stopping = Stopper()
 
 while not stopping.stop:
-    try:
-        clientSock, addr = sock.accept()
-        proc(clientSock, addr)
+    clientSock, addr = sock.accept()
+    proc(clientSock)
 
-    except socket.timeout:
-        continue
-
-    except Exception:
-        continue
 
 sock.close
