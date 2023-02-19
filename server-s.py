@@ -36,7 +36,7 @@ sock.listen(1)
 msg = b""
 total = 0
 stopping = Stopper()
-while stopping.stop == False: #infinite loop that keeps it connected to client
+while not stopping.stop: #infinite loop that keeps it connected to client
 
     clientSock, addr = sock.accept()
     clientSock.settimeout(10) #addr
