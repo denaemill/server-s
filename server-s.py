@@ -19,13 +19,7 @@ BUFFER_SIZE = 10000
 
 #Getting all of the inputs from the command line
 #If port is too large or too mall error?????????/
-#Honetly just checks if argv length is at least 2
-try:
-    port = sys.argv[1]
-except Exception:
-    sys.stderr.write("Error: () Wrong port number")
-
-
+port = sys.argv[1]
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -36,26 +30,24 @@ sock.listen(1)
 msg = b""
 total = 0
 stopping = Stopper()
-while not stopping.stop: #infinite loop that keeps it connected to client
+#while not stopping.stop: #infinite loop that keeps it connected to client
+clientSock, addr = sock.accept()
+clientSock.settimeout(10) #addr
 
-    clientSock, addr = sock.accept()
-    clientSock.settimeout(10) #addr
+clientSock.send(b"accio\r\n")
 
-    clientSock.send(b"accio\r\n")
+while True:
+    m = clientSock.recv(BUFFER_SIZE) #####
+    msg += m
 
-    while True:
-        m = clientSock.recv(1)
-        msg += m
+    total += len(m)
 
-        total += len(m)
+    if m.find(b"\n") != -1:
+        break
 
-        if m.find(b"\n") != -1:
-            break
+    # Connection is closed by server
+    elif len(m) <= 0:
+        break
 
-        # Connection is closed by server
-        elif len(m) <= 0:
-            break
-
-    print("Total bits recorded: %d" % total)
-
-    clientSock.close()
+print("%d" % total)
+clientSock.close()
