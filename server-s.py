@@ -16,7 +16,7 @@ class Stopper:
 
 
 BUFFER_SIZE = 10000
-port = sys.argv[1]
+port = int(sys.argv[1])
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -50,8 +50,11 @@ def proc(clientSock):
 stopping = Stopper()
 
 while not stopping.stop:
-    clientSock, addr = sock.accept()
-    proc(clientSock)
+    try:
+        clientSock, addr = sock.accept()
+        proc(clientSock)
+    except socket.error:
+        continue
 
 
 sock.close
