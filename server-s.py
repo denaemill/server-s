@@ -21,27 +21,37 @@ port = sys.argv[1]
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 sock.bind(("0.0.0.0", int(port)))
-sock.settimeout(10) #addr
-sock.listen(1)
-
-msg = b""
-i = 0
-total = 0
+sock.settimeout(10)
+sock.listen(5)
 
 
-clientSock, addr = sock.accept()
+def proc(clientSock, addr):
+    clientSock.send(b"accio\r\n")
 
-clientSock.send(b"accio\r\n")
+    total = 0
+    while True:
+        m = clientSock.recv(1)
 
-while True:
-    m = clientSock.recv(1024) #####
+        if not m:
+            break
 
-    if not m:
-        break
+        total += len(m)
 
-    total += len(m)
+    print(total)
+    clientSock.close()
 
 
-print(total)
+stopping = Stopper()
 
-clientSock.close()
+while not stopping.stop:
+    try:
+        clientSock, addr = sock.accept()
+        proc(clientSock, addr)
+
+    except socket.timeout:
+        continue
+
+    except Exception:
+        continue
+
+sock.close
