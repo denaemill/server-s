@@ -22,7 +22,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 sock.bind(("0.0.0.0", int(port)))
 sock.settimeout(10)
-sock.listen(5)
+sock.listen(1)
 
 
 def proc(clientSock, addr):
@@ -30,7 +30,7 @@ def proc(clientSock, addr):
 
     total = 0
     while True:
-        m = clientSock.recv(1)
+        m = clientSock.recv(BUFFER_SIZE)
 
         if not m:
             break
