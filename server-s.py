@@ -28,17 +28,23 @@ sock.listen(1)
 def proc(clientSock, addr):
     clientSock.send(b"accio\r\n")
 
-    total = 0
-    while True:
-        m = clientSock.recv(BUFFER_SIZE)
+    try:
+        total = 0
+        while True:
+            m = clientSock.recv(1)
 
-        if not m:
-            break
+            if not m:
+                break
 
-        total += len(m)
+            total += len(m)
 
-    print(total)
-    clientSock.close()
+        print(total)
+        clientSock.close()
+
+    except socket.error:
+        sys.stderr.write("ERROR: ()Address-related error connecting to server")
+        exit(1)
+
 
 
 stopping = Stopper()
