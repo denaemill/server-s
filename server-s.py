@@ -104,7 +104,7 @@ stopping = Stopper()
 bitAmount = 0
 while not stopping.stop:
     try:
-        clientSock = sock.accept() #?????
+        clientSock, addr = sock.accept()
         bitAmount = proc(clientSock)
         print(bitAmount)
 
