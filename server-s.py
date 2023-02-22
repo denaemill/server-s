@@ -11,7 +11,7 @@ class Stopper:
         signal.signal(signal.SIGTERM, self.interrupt_handler)
         signal.signal(signal.SIGINT, self.interrupt_handler)
 
-    def interrupt_handler(self, *args):
+    def interrupt_handler(self):
         self.stop = True
 
 # Setting up everything for the server to start listening
@@ -83,7 +83,7 @@ def proc(clientSock):
         if i == 2:
 
             while True:
-                m = clientSock.recv(1)
+                m = clientSock.recv(BUFFER_SIZE)
                 msg += m
                 total += len(m)
 
