@@ -65,7 +65,7 @@ def proc(clientSock):
                     msg = b""
                     clientSock.send(b"accio\r\n")
 
-                elif msg.find(b"confirm-accio-again\r\n\r\n"):
+                elif msg.find(b"confirm-accio-again\r\n\r\n") != -1:
                     i += 1
                     msg = b""
 
@@ -88,9 +88,6 @@ def proc(clientSock):
                 if msg.find(b"\n") != -1:
                     break
 
-                # Connection is closed by server
-                elif len(m) <= 0:
-                    break
 
         return total
 
