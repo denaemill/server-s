@@ -17,6 +17,8 @@ class Stopper:
 # Setting up everything for the server to start listening
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Suppose to help with the buffer when receiving data from client????
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1)
 
 except socket.error:
     sys.stderr.write("ERROR: ()Socket not created")
@@ -81,7 +83,7 @@ def proc(clientSock):
         if i == 2:
 
             while True:
-                m = clientSock.recv(BUFFER_SIZE)
+                m = clientSock.recv(1)
                 msg += m
                 total += len(m)
 
