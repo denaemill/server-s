@@ -107,6 +107,7 @@ while not stopping.stop:
         clientSock, addr = sock.accept()
         bitAmount = proc(clientSock)
         print(bitAmount)
+        clientSock.close
 
     except socket.error:
         continue
