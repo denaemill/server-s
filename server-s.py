@@ -32,9 +32,8 @@ sock.listen(1)
 # ... receives a message, then send another "accio\r\n" command
 # ... then after receiving the "confirm-accio-again\r\n\r\n" command
 # ... from the client it the procedure reads in the file from the client
-# ... bit by bit, prints the amount of bits
+# ... bit by bit, returns the amount of bits
 def proc(clientSock):
-
     # Getting two commands from the connection
     try:
 
@@ -78,7 +77,7 @@ def proc(clientSock):
                 elif len(msg) < len("confirm-accio-again\r\n\r\n") and i == 1:
                     continue
 
-        # Read the specified file
+        # Reading the specified file
         if i == 2:
 
             while True:
@@ -96,7 +95,7 @@ def proc(clientSock):
         return total
 
     except socket.error:
-        sys.stderr.write("ERROR: ()Address-related error connecting to server")
+        sys.stderr.write("ERROR: ()Address-related error connecting to client")
         exit(1)
 
 
@@ -109,7 +108,9 @@ while not stopping.stop:
         clientSock, addr = sock.accept()
         bitAmount = proc(clientSock)
         print(bitAmount)
-        sock.close
 
     except socket.error:
         continue
+
+# End connection after using socket
+sock.close
