@@ -14,47 +14,102 @@ class Stopper:
     def interrupt_handler(self, *args):
         self.stop = True
 
+# Setting up everything for the server to start listening
+try:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+except socket.error:
+    sys.stderr.write("ERROR: ()Socket not created")
+    exit(1)
 
 BUFFER_SIZE = 10000
 port = int(sys.argv[1])
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 sock.bind(("0.0.0.0", port))
 sock.settimeout(10)
 sock.listen(1)
 
-
+# Procedure that makes the server send a "accio\r\n"
+# ... receives a message, then send another "accio\r\n" command
+# ... then after receiving the "confirm-accio-again\r\n\r\n" command
+# ... from the client it the procedure reads in the file from the client
+# ... bit by bit, prints the amount of bits
 def proc(clientSock):
-    clientSock.send(b"accio\r\n")
 
+    # Getting two commands from the connection
     try:
+
+        i = 0
         total = 0
-        while True:
-            m = clientSock.recv(1)
+        msg = b""
+        clientSock.send(b"accio\r\n")
 
-            if not m:
-                break
+        while i < 2:
 
-            total += len(m)
+            # Recieves commands from the server bit by bit
+            while True:
+                m = clientSock.recv(1)
 
-        print(total)
-        clientSock.close()
+                msg += m
+
+                if msg.find(b"\n") != -1:
+                    break
+
+                # Connection is closed by server
+                elif len(m) <= 0:
+                    break
+
+            # Checks if there was a command recorded
+            if len(msg) > 0:
+
+                if msg.find(b"confirm-accio\r\n") != -1:
+                    i += 1
+                    msg = b""
+                    clientSock.send(b"accio\r\n")
+
+                elif msg.find(b"confirm-accio-again\r\n\r\n"):
+                    i += 1
+                    msg = b""
+
+                # Continues to append to the mg string until
+                # ... it matches the specified command
+                elif len(msg) < len("confirm-accio\r\n") and i == 0:
+                    continue
+
+                elif len(msg) < len("confirm-accio-again\r\n\r\n") and i == 1:
+                    continue
+
+        # Read the specified file
+        if i == 2:
+
+            while True:
+                m = clientSock.recv(BUFFER_SIZE)
+                msg += m
+                total += len(m)
+
+                if msg.find(b"\n") != -1:
+                    break
+
+                # Connection is closed by server
+                elif len(m) <= 0:
+                    break
+
+        return total
 
     except socket.error:
         sys.stderr.write("ERROR: ()Address-related error connecting to server")
         exit(1)
 
 
-
+# This while loop keeps the socket and keeps connecting
+# ... to different IP addresses until an error occurs
 stopping = Stopper()
-
+bitAmount = 0
 while not stopping.stop:
     try:
         clientSock, addr = sock.accept()
-        proc(clientSock)
+        bitAmount = proc(clientSock)
+        print(bitAmount)
+        sock.close
+
     except socket.error:
         continue
-
-
-sock.close
