@@ -67,7 +67,7 @@ def proc(clientSock):
                 # raise is here to construct the error for the handshake
                 # ... if it does occur
                 elif len(m) <= 0:
-                    raise socket.error()
+                    raise socket.error("Error : () Server did not receive any data.")
 
             # Checks if there was a command recorded
             if len(msg) > 0:
