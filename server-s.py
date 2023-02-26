@@ -1,7 +1,6 @@
 import socket
 import sys
 import signal
-import time
 
 # Creating a class of signals to process some errors
 class Stopper:
@@ -17,18 +16,27 @@ class Stopper:
 # Setting up everything for the server to start listening
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # Suppose to help with the buffer when receiving data from client????
+    # Suppose to help with the buffer when receiving data from client
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1)
 
 except socket.error:
     sys.stderr.write("ERROR: ()Socket not created")
     exit(1)
 
+# Buffer size for file reading from client side
 BUFFER_SIZE = 10000
-port = int(sys.argv[1])
-sock.bind(("0.0.0.0", port))
-sock.settimeout(10)
-sock.listen(1)
+
+# try except block around bind to test for incorrect port number
+try:
+    port = int(sys.argv[1])
+    sock.bind(("0.0.0.0", port))
+
+except socket.error:
+    sys.stderr.write("ERROR: ()Socket not created")
+    exit(1)
+
+# Buffers the connections, and accept takes each connection from the stored buffer
+sock.listen(10)
 
 # Procedure that makes the server send a "accio\r\n"
 # ... receives a message, then send another "accio\r\n" command
@@ -56,8 +64,10 @@ def proc(clientSock):
                     break
 
                 # Connection is closed by server
+                # raise is here to construct the error for the handshake
+                # ... if it does occur
                 elif len(m) <= 0:
-                    break
+                    raise socket.error()
 
             # Checks if there was a command recorded
             if len(msg) > 0:
@@ -82,20 +92,20 @@ def proc(clientSock):
         # Reading the specified file
         if i == 2:
 
+            # End while when TCP connection closes
             while True:
                 m = clientSock.recv(BUFFER_SIZE)
-                msg += m
                 total += len(m)
 
-                if msg.find(b"\n") != -1:
+                # Does not specify end of file
+                if len(m) <= 0:
                     break
 
-
-        return total
+        print(total)
 
     except socket.error:
-        sys.stderr.write("ERROR: ()Address-related error connecting to client")
-        exit(1)
+        print("ERROR: ()Address-related error connecting to client")
+
 
 
 # This while loop keeps the socket and keeps connecting
@@ -103,14 +113,9 @@ def proc(clientSock):
 stopping = Stopper()
 bitAmount = 0
 while not stopping.stop:
-    try:
         clientSock, addr = sock.accept()
-        bitAmount = proc(clientSock)
-        print(bitAmount)
-        clientSock.close
+        proc(clientSock)
 
-    except socket.error:
-        continue
 
 # End connection after using socket
-sock.close
+sock.close()
